@@ -1,0 +1,246 @@
+-- File: admin_final_falz.lua
+-- Executor: Synapse X / Script-Ware
+-- Username: falzieeeee
+
+local RS = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LP = Players.LocalPlayer
+
+-- =====================
+-- STEP 1: spoof AdminList
+-- =====================
+pcall(function()
+    local AdminList = require(RS:WaitForChild("Admin"):WaitForChild("AdminList"))
+    if not table.find(AdminList, "falzieeeee") then
+        table.insert(AdminList, "falzieeeee")
+        print("[Falz] Injected falzieeeee ke AdminList")
+    end
+    AdminList.IsAdmin = function(player)
+        if player and player.Name then
+            return player.Name:lower() == "falzieeeee"
+                or table.find(AdminList, player.Name:lower()) ~= nil
+        end
+        return false
+    end
+    print("[Falz] IsAdmin spoofed → falzieeeee = admin")
+end)
+
+-- =====================
+-- STEP 2: grab AdminCommandEvent
+-- =====================
+local AdminCommandEvent
+local ok, err = pcall(function()
+    AdminCommandEvent = RS:WaitForChild("ADMIN")
+        :WaitForChild("RemoteEvents")
+        :WaitForChild("AdminCommandEvent")
+end)
+if not ok then
+    warn("[Falz] AdminCommandEvent gagal: " .. tostring(err))
+    return
+end
+print("[Falz] AdminCommandEvent ready")
+
+-- =====================
+-- STEP 3: fire command
+-- =====================
+local function FireCommand(cmd)
+    cmd = cmd:match("^%s*(.-)%s*$")
+    if not cmd or #cmd == 0 then return end
+    local ok2, err2 = pcall(function()
+        AdminCommandEvent:FireServer(cmd)
+    end)
+    print(ok2 and "[Falz] Sent: " .. cmd or "[Falz] Failed: " .. tostring(err2))
+end
+
+-- =====================
+-- GUI
+-- =====================
+pcall(function()
+    if game.CoreGui:FindFirstChild("FalzGUI") then
+        game.CoreGui.FalzGUI:Destroy()
+    end
+end)
+
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "FalzGUI"
+gui.ResetOnSpawn = false
+gui.DisplayOrder = 999
+
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0, 320, 0, 420)
+main.Position = UDim2.new(0.5, -160, 0.5, -210)
+main.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
+local ms = Instance.new("UIStroke", main)
+ms.Color = Color3.fromRGB(0, 200, 80)
+ms.Thickness = 1.5
+
+-- header
+local hdr = Instance.new("Frame", main)
+hdr.Size = UDim2.new(1, 0, 0, 40)
+hdr.BackgroundColor3 = Color3.fromRGB(0, 140, 55)
+hdr.BorderSizePixel = 0
+Instance.new("UICorner", hdr).CornerRadius = UDim.new(0, 10)
+local hfix = Instance.new("Frame", hdr)
+hfix.Size = UDim2.new(1, 0, 0.5, 0)
+hfix.Position = UDim2.new(0, 0, 0.5, 0)
+hfix.BackgroundColor3 = Color3.fromRGB(0, 140, 55)
+hfix.BorderSizePixel = 0
+
+local htitle = Instance.new("TextLabel", hdr)
+htitle.Size = UDim2.new(1, -44, 1, 0)
+htitle.Position = UDim2.new(0, 12, 0, 0)
+htitle.BackgroundTransparency = 1
+htitle.Text = "🥚 Falz Admin Panel"
+htitle.TextColor3 = Color3.new(1, 1, 1)
+htitle.TextSize = 13
+htitle.Font = Enum.Font.GothamMedium
+htitle.TextXAlignment = Enum.TextXAlignment.Left
+
+local xbtn = Instance.new("TextButton", hdr)
+xbtn.Size = UDim2.new(0, 28, 0, 28)
+xbtn.Position = UDim2.new(1, -34, 0.5, -14)
+xbtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+xbtn.Text = "✕"
+xbtn.TextColor3 = Color3.new(1, 1, 1)
+xbtn.TextSize = 12
+xbtn.Font = Enum.Font.GothamMedium
+xbtn.BorderSizePixel = 0
+Instance.new("UICorner", xbtn).CornerRadius = UDim.new(0, 6)
+xbtn.Activated:Connect(function() main.Visible = false end)
+
+-- command list
+local CMDS = {
+    { "💰 Give Cash 1M",     "/givecash 1000000"   },
+    { "✖2 Cash 60m",         "/x2cash 60"          },
+    { "🍀 x2 Luck 60m",      "/x2luck 60"          },
+    { "🆓 Free All",          "/freeall"            },
+    { "½ Half Price",         "/halfprice"          },
+    { "🥚 Spawn Legendary",   "/spawnegg Legendary" },
+    { "🥚 Spawn Loop",        "/spawnloop Legendary"},
+    { "⏹ Stop Loop",          "/stoploop"           },
+    { "🌋 Volcano",           "/volcano"            },
+    { "🩸 Blood Moon",        "/bloodmoon"          },
+    { "⚡ Thunderstorm",      "/thunderstorm"       },
+    { "🌙 Night",             "/night"              },
+    { "🎲 Random Mut",        "/randommutation"     },
+    { "🌀 Chaos 30s",         "/chaos 30"           },
+    { "🛸 UFOs x5",           "/ufos 5"             },
+    { "🦈 Sharks x5",         "/sharks 5"           },
+}
+
+-- scroll
+local scroll = Instance.new("ScrollingFrame", main)
+scroll.Size = UDim2.new(1, -12, 1, -122)
+scroll.Position = UDim2.new(0, 6, 0, 46)
+scroll.BackgroundTransparency = 1
+scroll.ScrollBarThickness = 3
+scroll.ScrollBarImageColor3 = Color3.fromRGB(0, 180, 70)
+scroll.BorderSizePixel = 0
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+local grid = Instance.new("UIGridLayout", scroll)
+grid.CellSize = UDim2.new(0.5, -5, 0, 34)
+grid.CellPadding = UDim2.new(0, 5, 0, 5)
+grid.SortOrder = Enum.SortOrder.LayoutOrder
+local gpad = Instance.new("UIPadding", scroll)
+gpad.PaddingTop = UDim.new(0, 4)
+gpad.PaddingLeft = UDim.new(0, 2)
+gpad.PaddingRight = UDim.new(0, 2)
+
+for i, entry in ipairs(CMDS) do
+    local btn = Instance.new("TextButton", scroll)
+    btn.LayoutOrder = i
+    btn.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    btn.Text = entry[1]
+    btn.TextColor3 = Color3.fromRGB(210, 210, 210)
+    btn.TextSize = 11
+    btn.Font = Enum.Font.GothamMedium
+    btn.TextWrapped = true
+    btn.BorderSizePixel = 0
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 7)
+    local bs = Instance.new("UIStroke", btn)
+    bs.Color = Color3.fromRGB(35, 35, 55)
+    bs.Thickness = 1
+    btn.MouseEnter:Connect(function()
+        bs.Color = Color3.fromRGB(0, 180, 70)
+    end)
+    btn.MouseLeave:Connect(function()
+        bs.Color = Color3.fromRGB(35, 35, 55)
+    end)
+    btn.Activated:Connect(function()
+        FireCommand(entry[2])
+        btn.BackgroundColor3 = Color3.fromRGB(0, 90, 35)
+        task.wait(0.25)
+        btn.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    end)
+end
+
+-- divider
+local div = Instance.new("Frame", main)
+div.Size = UDim2.new(1, -12, 0, 1)
+div.Position = UDim2.new(0, 6, 1, -70)
+div.BackgroundColor3 = Color3.fromRGB(35, 35, 55)
+div.BorderSizePixel = 0
+
+-- custom input
+local ibg = Instance.new("Frame", main)
+ibg.Size = UDim2.new(1, -12, 0, 30)
+ibg.Position = UDim2.new(0, 6, 1, -64)
+ibg.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+ibg.BorderSizePixel = 0
+Instance.new("UICorner", ibg).CornerRadius = UDim.new(0, 7)
+local ibs = Instance.new("UIStroke", ibg)
+ibs.Color = Color3.fromRGB(35, 35, 55)
+ibs.Thickness = 1
+
+local ibox = Instance.new("TextBox", ibg)
+ibox.Size = UDim2.new(1, -10, 1, 0)
+ibox.Position = UDim2.new(0, 8, 0, 0)
+ibox.BackgroundTransparency = 1
+ibox.TextColor3 = Color3.fromRGB(210, 210, 210)
+ibox.PlaceholderText = "custom command..."
+ibox.PlaceholderColor3 = Color3.fromRGB(70, 70, 90)
+ibox.Text = ""
+ibox.TextSize = 11
+ibox.Font = Enum.Font.Code
+ibox.ClearTextOnFocus = false
+ibox.TextXAlignment = Enum.TextXAlignment.Left
+ibox.FocusLost:Connect(function(enter)
+    if enter and #ibox.Text > 0 then
+        FireCommand(ibox.Text)
+        ibox.Text = ""
+    end
+end)
+
+-- send button
+local sbtn = Instance.new("TextButton", main)
+sbtn.Size = UDim2.new(1, -12, 0, 28)
+sbtn.Position = UDim2.new(0, 6, 1, -30)
+sbtn.BackgroundColor3 = Color3.fromRGB(0, 150, 55)
+sbtn.Text = "⚡ SEND"
+sbtn.TextColor3 = Color3.new(1, 1, 1)
+sbtn.TextSize = 13
+sbtn.Font = Enum.Font.GothamMedium
+sbtn.BorderSizePixel = 0
+Instance.new("UICorner", sbtn).CornerRadius = UDim.new(0, 7)
+sbtn.Activated:Connect(function()
+    if #ibox.Text > 0 then
+        FireCommand(ibox.Text)
+        ibox.Text = ""
+    end
+end)
+
+-- toggle RightShift
+game:GetService("UserInputService").InputBegan:Connect(function(inp, gpe)
+    if gpe then return end
+    if inp.KeyCode == Enum.KeyCode.RightShift then
+        main.Visible = not main.Visible
+    end
+end)
+
+print("[Falz] Ready — falzieeeee injected, AdminCommandEvent hooked")
